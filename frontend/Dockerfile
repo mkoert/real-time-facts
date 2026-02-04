@@ -10,16 +10,17 @@ COPY package*.json ./
 RUN npm install
 
 # Copy source code
-COPY public/ ./public/
+COPY index.html ./
+COPY vite.config.js ./
 COPY src/ ./src/
 
 # Build arguments for environment variables
-ARG REACT_APP_WS_URL
-ARG REACT_APP_API_URL
+ARG VITE_WS_URL
+ARG VITE_API_URL
 
 # Set environment variables for build
-ENV REACT_APP_WS_URL=$REACT_APP_WS_URL
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV VITE_WS_URL=$VITE_WS_URL
+ENV VITE_API_URL=$VITE_API_URL
 
 # Build the app
 RUN npm run build
@@ -28,7 +29,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built files
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
