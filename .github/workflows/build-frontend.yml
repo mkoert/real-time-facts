@@ -1,0 +1,41 @@
+name: Build Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+env:
+  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+  DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.DOCKER_HUB_USERNAME }}/real-time-facts-frontend:${{ github.sha }}
+            ${{ env.DOCKER_HUB_USERNAME }}/real-time-facts-frontend:latest
+          build-args: |
+            REACT_APP_WS_URL=${{ vars.REACT_APP_WS_URL }}
+            REACT_APP_API_URL=${{ vars.REACT_APP_API_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

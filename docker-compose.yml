@@ -1,0 +1,93 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: facts-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - facts-network
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: facts-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${BACKEND_PORT}
+      MONGODB_URI: ${MONGODB_URI}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - facts-network
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  data-generator:
+    build:
+      context: ./data-generator
+      dockerfile: Dockerfile
+    container_name: facts-generator
+    restart: unless-stopped
+    environment:
+      MONGODB_URI: ${MONGODB_URI}
+      GENERATOR_INTERVAL_MS: ${GENERATOR_INTERVAL_MS}
+      BACKEND_WS_URL: ws://backend:3001
+    depends_on:
+      backend:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - facts-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_WS_URL: ${REACT_APP_WS_URL}
+        REACT_APP_API_URL: ${REACT_APP_API_URL}
+    container_name: facts-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - facts-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: facts-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - facts-network
+
+networks:
+  facts-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

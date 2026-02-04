@@ -1,0 +1,7 @@
+services:
+  data-generator:
+    volumes:
+      - ./data-generator/index.js:/app/index.js
+    command: [ "npm", "run", "dev" ]
+    environment:
+      NODE_ENV: development

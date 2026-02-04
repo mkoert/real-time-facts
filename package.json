@@ -1,0 +1,21 @@
+{
+  "name": "realtime-facts-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Real-time facts application monorepo",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev -w @facts/backend",
+    "dev:frontend": "npm run start -w @facts/frontend",
+    "dev:generator": "npm run start -w @facts/data-generator",
+    "build": "npm run build -w @facts/frontend",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
