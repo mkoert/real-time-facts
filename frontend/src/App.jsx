@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Header, StatsBar, FilterBar, FactsGrid, Footer } from './components';
-import { useFacts } from './hooks';
+import { Header, StatsBar, FilterBar, FactsGrid, Footer, LoginPage } from './components';
+import { useFacts, useAuth } from './hooks';
 import './App.css';
 
 function App() {
+  const { user, loading, loginUrl, logout } = useAuth();
   const { facts, stats, connectionStatus } = useFacts();
   const [filter, setFilter] = useState('all');
 
@@ -17,9 +18,17 @@ function App() {
       : facts.filter(fact => fact.category === filter);
   }, [facts, filter]);
 
+  if (loading) {
+    return null;
+  }
+
+  if (!user) {
+    return <LoginPage loginUrl={loginUrl} />;
+  }
+
   return (
     <div className="app">
-      <Header connectionStatus={connectionStatus} />
+      <Header connectionStatus={connectionStatus} user={user} loginUrl={loginUrl} onLogout={logout} />
       <StatsBar stats={stats} />
       <FilterBar
         categories={categories}

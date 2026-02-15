@@ -33,8 +33,5 @@ data/
 
 #Temp while setting up projects
 native
-data-generator
-mongo-init.js
-nginx
 .github/workflows/build-backend.yml
 cluade.md

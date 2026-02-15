@@ -1,0 +1,20 @@
+{
+  "name": "facts-generator",
+  "version": "1.0.0",
+  "description": "Random fact data generator for real-time facts application",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "dependencies": {
+    "mongoose": "^8.0.3",
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
